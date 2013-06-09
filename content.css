@@ -1,0 +1,21 @@
+#share-options .embed:not(:last-child) {
+	border-right: 1px solid #424C49!important;
+}
+
+.embed.download img {
+	height: 14px;
+	margin-top: 2px;
+}
+
+ul.episodes .description .download_episode {
+	float:	right;
+	width:	20px;
+	opacity: 0.4;
+	cursor:	pointer;
+	margin: 0px 0px 5px 5px;
+	-webkit-transition: opacity 0.3s;
+}
+
+ul.episodes li:hover .description .download_episode {
+	opacity: 1;
+}
