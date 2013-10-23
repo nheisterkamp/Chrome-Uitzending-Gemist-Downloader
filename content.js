@@ -1,142 +1,147 @@
-var mainEpisodeId = null;
-setInterval(function(){
-	checkMainEpisodeDownload();
-	checkEpisodeListDownloads();
-}, 300);
-
-// !Download buttons
-$('.download_episode').live('click', function(event) {
-	event.preventDefault();
-	var videoUrl = $(this).data('video-url');
-	var videoSerie = $(this).data('video-serie');
-	var videoEpisode = $(this).data('video-episode');
-	var episodeDate = extractDate(videoEpisode);
-
-	if (episodeDate != null) {
-	    videoEpisode = episodeDate.format("yyyy-MM-dd HH:mm");
-	}
-
-	downloadEpisode(videoUrl, videoSerie + ' - ' + videoEpisode);
+$(document).ready(function() {
+    setTimeout(
+        addMainEpisodeDownloadButton,
+        100
+    );
 });
 
-// !Main video
-function checkMainEpisodeDownload() {
-	if($('#episode-page').length == 0)
-		return;
-	
-	var currentEpisodeId = $('#episode-data').data('episode-id');
-	var isActive = $('#episode-data').data('is-active');
-	
-	if(isActive && currentEpisodeId != mainEpisodeId) {
-		mainEpisodeId = currentEpisodeId;
-		
-		// Remove previous button
-		$('#share-options .embed.download').remove();
-		
-		getDownloadUrl(currentEpisodeId, function(videoUrl) {
-			if(typeof videoUrl === 'string')
-			{
-				var serieTitle = $('#meta-information .series').attr('title');
-				var episodeTitle = $('#meta-information .episode').attr('title');
-				
-				$('#share-options').append('<div class="embed download"><img alt="Download" src="'+chrome.extension.getURL('img/download.png')+'" /><a href="#" data-video-url="'+videoUrl+'" data-video-serie="'+serieTitle+'" data-video-episode="'+episodeTitle+'" class="download_episode">Download</a></div>');
-				
-				$('.share-images').css({
-					marginTop:	'10px',
-					marginLeft:	'0px'
-				})
-				.find('img').first().css('margin-left', '0px');
-			}
-		});
-	}
+function addMainEpisodeDownloadButton() {
+    var serieTitle = $('#meta-information .series').attr('title'),
+        episodeTitle = $('#meta-information .episode').attr('title'),
+        button = $('<div class="embed download"></div>'),
+        img = $(button).append($(
+            '<img alt="Download" src="'+
+                chrome.extension.getURL('img/download.png')+'" />'
+        )),
+        link = $(button).append($(
+            '<a href="" class="download_episode">Download</a>'
+        ));
+
+    link.click(function() {
+        event.preventDefault();
+        var serieTitle = $('#meta-information .series').attr('title'),
+            episodeTitle = $('#meta-information .episode').attr('title'),
+            episodeDate = extractDate(episodeTitle);
+
+        if (episodeDate != null) {
+            episodeDate = episodeDate.format("yyyy-MM-dd")+' - ';
+        }
+
+        getDownloadUrl(
+            $('#episode-data').data('player-id'), function(videoUrl) {
+                if (typeof videoUrl==='string') {
+                    downloadEpisode(videoUrl, episodeDate+serieTitle);
+                }
+                else {
+                    alert(
+                        'Er is iets mis gegaan bij het verkrijgen van de'+
+                        ' downloadlink naar de aflevering.'+
+                        "\n"+
+                        "\n"+
+                        'Ververs de pagina en probeer het nogmaals.'
+                    );
+                }
+            }
+        );
+    });
+
+    $('#share-options').append(button);
 }
 
-// !Episode list
-function checkEpisodeListDownloads() {
-	$('ul.episodes li.active').not('.download-checked').each(function() {
-		var element = $(this);
-		var episodeId = element.data('remote-id');
-		var serieTitle = $('#meta-information .series').attr('title');
-		
-		if(typeof serieTitle != 'string')
-			serieTitle = $('#series-page .blackbox .left h2 a').first().text();
-		
-		element.addClass('download-checked');
-		
-		getDownloadUrl(episodeId, function(videoUrl) {
-			if(typeof videoUrl === 'string')
-			{
-				// Get episode title
-				var titleElement = element.find('.description a.knav_link').clone();
-				titleElement.find('img, span').remove();
-				var episodeTitle = $.trim(titleElement.text());
-				
-				// Create button
-				var downloadButton = $('<img>').attr({
-					 class:					'download_episode',
-					 alt:					'Download',
-					 title:					'Download deze aflevering',
-					 src:					chrome.extension.getURL('img/download-black.png'),
-					 'data-video-url':		videoUrl,
-					 'data-video-serie':	serieTitle,
-					 'data-video-episode':	episodeTitle
-				});
-				
-				element.find('.description h3').first().after(downloadButton);
-			}
-		});
-	});
-}
-
-// !Functions
 function getDownloadUrl(episodeId, callback) {
-	$.ajax({
-		url: '/player/'+episodeId,
-		cache: false,
-		dataType: 'text'
-	})
-	.success(function(response) {
-		var videoUrl = null;
-		var video = $(response).filter('#video_object');
-		if(video.length > 0) {
-			video[0].pause();
-			videoUrl = video.find('source')[0].src;
-			video.remove();
-		}
-		
-		if(typeof callback === 'function')
-			callback(videoUrl);
-	})
-	.fail(function() {
-		if(typeof callback === 'function')
-			callback(null);
-	});
+    function parseToken(r, e) {
+        var t = r.responseText,
+            m = new RegExp('token = "(.*)";', 'g'),
+            s = m.exec(t);
+
+        if (s && s.length>1) {
+            var token = s[1];
+            if (token) {
+                useToken(token);
+            }
+        }
+        else {
+            callback();
+        }
+    }
+
+    function useToken(token) {
+        $.ajax({
+            url: 'http://ida.omroep.nl/odiplus/?prid='+episodeId+
+                    '&puboptions=h264_std&adaptive=no&part=1&token='+token,
+            error: callback,
+            success: parseIda
+        });
+    }
+
+    function parseIda(r, e) {
+        var s = r.streams;
+
+        if (s.length>0) {
+            var stream = s[0],
+                streamJson = stream.replace(/jsonp/g, 'json');
+
+            $.ajax({
+                url: streamJson,
+                success: parseOdi
+            });
+        }
+        else {
+            callback();
+        }
+    }
+
+    function parseOdi(r, e) {
+        if (typeof r.url!=='undefined') {
+            callback(r.url);
+        }
+        else {
+            callback();
+        }
+    }
+
+    $.ajax({
+        url: 'http://ida.omroep.nl/npoplayer/i.js',
+        cache: false,
+        complete: parseToken
+    });
 }
 
 function downloadEpisode(videoUrl, videoName) {
-	var videoName = videoName.replace(',', '').replace(':', '').replace('?', '');
-	videoName = encodeURIComponent(videoName).replace('%3A', '');
-	chrome.extension.sendRequest({
-			action: "forceDownload",
-			url: videoUrl,
-			filename: videoName + '.mp4'
-		}, function() {
-			window.location = videoUrl;
-	});
+    var videoName = videoName.replace(',', '')
+                             .replace(':', '')
+                             .replace('?', '');
+
+    videoName = encodeURIComponent(videoName).replace('%3A', '');
+    chrome.extension.sendRequest({
+            action: "forceDownload",
+            url: videoUrl,
+            filename: videoName+'.mp4'
+        }, function() {
+            window.location = videoUrl;
+    });
 }
 
 function extractDate(episodeName) {
     try {
         var episodeName = episodeName.toLowerCase();
         var remove = ["ma", "di", "wo", "do", "vr", "za", "zo"];
-        var dutchMonthAbbreviations = ["jan", "feb", "maa", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+        var dutchMonthAbbreviations = [
+            "jan", "feb", "maa",
+            "apr", "mei", "jun",
+            "jul", "aug", "sep",
+            "okt", "nov", "dec"
+        ];
 
         for (var i = 0; i < remove.length; i++) {
             episodeName = episodeName.replace(remove[i], "");
         }
 
         for (var i = 0; i < dutchMonthAbbreviations.length; i++) {
-            episodeName = episodeName.replace(dutchMonthAbbreviations[i], Date.monthAbbreviations[i]);
+            episodeName = episodeName.replace(
+                dutchMonthAbbreviations[i],
+                Date.monthAbbreviations[i]
+            );
         }
 
         episodeName = $.trim(episodeName);
