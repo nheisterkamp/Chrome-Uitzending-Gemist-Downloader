@@ -1,7 +1,7 @@
 {
   "name": "Uitzending Gemist Downloader",
-  "version": "1.4.0",
-  "manifest_version": 3,
+  "version": "1.4.1",
+  "manifest_version": 4,
   "description": "Download afleveringen van Uitzending Gemist.",
   "homepage_url": "https://github.com/luukd/Chrome-Uitzending-Gemist-Downloader",
   "icons": {
