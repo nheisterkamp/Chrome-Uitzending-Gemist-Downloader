@@ -1,7 +1,7 @@
 {
   "name": "Uitzending Gemist Downloader",
   "version": "1.4.0",
-  "manifest_version": 3,
+  "manifest_version": 2,
   "description": "Download afleveringen van Uitzending Gemist.",
   "homepage_url": "https://github.com/luukd/Chrome-Uitzending-Gemist-Downloader",
   "icons": {
@@ -19,7 +19,7 @@
       "js": ["date.js", "jquery.js", "content.js"]
     }
   ],
-  "minimum_chrome_version": "17",
+  "minimum_chrome_version": "25",
   "permissions": [
     "webRequest",
     "webRequestBlocking",
