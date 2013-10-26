@@ -26,11 +26,14 @@ function addMainEpisodeDownloadButton() {
         if (episodeDate != null) {
             episodeDate = episodeDate.format("yyyy-MM-dd")+' - ';
         }
+        if (!episodeDate) {
+            episodeDate = '';
+        }
 
         getDownloadUrl(
             $('#episode-data').data('player-id'), function(videoUrl) {
                 if (typeof videoUrl==='string') {
-                    downloadEpisode(videoUrl, episodeDate+serieTitle);
+                    downloadEpisode(videoUrl, episodeDate+serieTitle+' - '+episodeTitle);
                 }
                 else {
                     alert(
