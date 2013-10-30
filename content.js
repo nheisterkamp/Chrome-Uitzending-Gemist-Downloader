@@ -17,6 +17,18 @@ function addMainEpisodeDownloadButton() {
             '<a href="" class="download_episode">Download</a>'
         ));
 
+    wrappertId = 'player_npoplayer_wrapper';
+    wrappert = $('#'+wrappertId);
+
+    getDownloadUrl($('#episode-data').data('player-id'), function(videoUrl) {
+        newPlayerOnTheBlock =
+            $('<video id="player" controls autoplay>'
+            + '  <source src="'+videoUrl+'" type="video/mp4">'
+            + '</video>');
+        wrappert.replaceWith(newPlayerOnTheBlock);
+    });
+
+
     link.click(function() {
         event.preventDefault();
         var serieTitle = $('#meta-information .series').attr('title'),
