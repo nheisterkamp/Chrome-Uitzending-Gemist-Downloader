@@ -19,3 +19,12 @@ ul.episodes .description .download_episode {
 ul.episodes li:hover .description .download_episode {
 	opacity: 1;
 }
+
+.icon > div {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  top: 4px;
+  left: 14px;
+}

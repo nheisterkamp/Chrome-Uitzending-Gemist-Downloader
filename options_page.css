@@ -1,0 +1,60 @@
+html, body {
+  font-family: "Helvetica Neue", sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, input, button, label {
+  font-weight: 100;
+  display: block;
+  margin: 0;
+}
+
+label {
+  font-size: 1.5em;
+}
+
+h1 {
+  font-weight: 200;
+}
+
+body {
+  width: 40em;
+  margin: auto;
+  padding: 3em 0;
+  text-align: center;
+}
+
+button, input {
+  padding: .5em 2em;
+  font-size: 1em;
+  font-weight: 200;
+  margin: 1em auto;
+}
+
+main {
+  border-radius: 1em;
+  border: 1px solid rgba(0,0,0,.7);
+  padding: 1em 1em;
+  text-align: left;
+  width: 20em;
+  margin: 3em auto;
+}
+
+input {
+  float: right;
+  clear: both;
+  margin-top: .5em;
+  margin-right: 1em;
+}
+
+main > header {
+  margin-bottom: 1em;
+}
+
+main > header > h1 {
+  border-bottom: 1px solid rgba(0,0,0,.1);
+}
+
+main > section {
+  margin-left: .5em;
+  margin-top: .5em;
+}
