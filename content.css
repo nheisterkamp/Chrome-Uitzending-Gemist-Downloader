@@ -28,3 +28,18 @@ ul.episodes li:hover .description .download_episode {
   top: 4px;
   left: 14px;
 }
+
+a.icon {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  background: #eee7d8;
+
+  margin: 0 20px 0 0;
+  padding: 0;
+  float: left;
+}
+
+a.icon:hover {
+  background: #d1cabd;
+}

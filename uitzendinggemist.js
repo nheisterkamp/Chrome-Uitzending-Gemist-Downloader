@@ -7,75 +7,109 @@ o.getEnabled(function(val) {
 
   $(document).ready(function() {
     setTimeout(addMainEpisodeDownloadButton, 100);
-    setInterval(addMainEpisodeDownloadButton, 5000);
+    setInterval(addMainEpisodeDownloadButton, 30000);
   });
 });
 
 function addMainEpisodeDownloadButton() {
+  videoFile = getEpisodeTitle();
+
   if ($('.download_episode').length > 0) {
     return;
   }
 
-  var serieTitle = $('#meta-information .series').attr('title'),
-  episodeTitle = $('#meta-information .episode').attr('title'),
-  button = $('<div class="embed download"></div>'),
-  img = $(button).append($(
-    '<img alt="Download" src="'+
-    chrome.extension.getURL('img/download.png')+'" />'
-    )),
-  link = $(button).append($(
-    '<a href="" class="download_episode">Download</a>'
-    ));
+  getDownloadUrl(getEpisodeId(), function(videoUrl) {
+    var button  = $('<div class="embed download block"></div>'),
+        link    = $(button).append($(
+                    '<a href="'+videoUrl+'"'+
+                    ' class="download_episode"'+
+                    ' title="'+videoFile+'.mp4"'+
+                    ' download="'+videoFile+'.mp4">'+
+                      'Download'+
+                    '</a>'
+                  ));
 
-  wrappertId = 'player_npoplayer_wrapper';
-  wrappert = $('#'+wrappertId);
-
-  o.getHTML5(function(val) {
-    if (val == false) {
-      return;
+    var so = $('#share-options');
+    if (so.length > 0) {
+      $(button).prepend($('<i class="npo-icon-"><img alt="Download" src="'+
+        chrome.extension.getURL('img/download.png')+'"></i>'
+      ));
+      so = $('#share-options');
     }
+    else {
+      so = $('.span-sidebar > .metadata > div > div:first-child');
+      if (so.length > 0) {
+        $(button).prepend($('<i class="npo-icon-jump-box"></i>'));
+        so = $('.span-sidebar > .metadata > div > div:first-child');
+      }
+    }
+    so.append(button);
 
-    getDownloadUrl($('#episode-data').data('player-id'), function(videoUrl) {
+    o.getHTML5(function(val) {
+      if (val == false) {
+        return;
+      }
+
+      wrappert = $('#player_npoplayer_wrapper');
+      if (wrappert.length === 0) {
+        wrappert = $('.video-player-container');
+      }
+
       newPlayerOnTheBlock =
-      $('<video id="player" controls autoplay>'
+      $ ( '<video id="player" style="width: 100%;" controls autoplay>'
         + '  <source src="'+videoUrl+'" type="video/mp4">'
-        + '</video>');
+        + '</video>'
+        );
+
       wrappert.replaceWith(newPlayerOnTheBlock);
     });
   });
+}
 
-  link.click(function() {
-    event.preventDefault();
-    var serieTitle = $('#meta-information .series').attr('title'),
-    episodeTitle = $('#meta-information .episode').attr('title'),
-    episodeDate = extractDate(episodeTitle);
+function getEpisodeTitle() {
+  var serieTitle    = $('#meta-information .series').attr('title'),
+      episodeTitle  = $('#meta-information .episode').attr('title'),
+      infoDate      = $('table.information'+
+                        ' > tbody'+
+                        ' > tr:nth-child(2)'+
+                        ' > td:first-child'
+                      ).text();
 
-    if (episodeDate != null) {
-      episodeDate = episodeDate.format("yyyy-MM-dd")+' - ';
+  if (!serieTitle || !episodeTitle) {
+    var a = $('.share-modal.modal.hide.fade > div > h2').text(),
+        s = a.split(': ');
+
+    if (s.length > 1) {
+      serieTitle = s[0];
+      episodeTitle = s[1];
     }
-    if (!episodeDate) {
-      episodeDate = '';
+    else if (a) {
+      episodeTitle = a;
+      serieTitle = a;
     }
+    infoDate = $( '.span-sidebar'+
+                  ' > .metadata'+
+                  ' > div'+
+                  ' > div:first-child'+
+                  ' > div:first-child'
+                ).text().trim().toLowerCase();
+  }
 
-    getDownloadUrl(
-      $('#episode-data').data('player-id'), function(videoUrl) {
-        if (typeof videoUrl==='string') {
-          downloadEpisode(videoUrl, episodeDate+serieTitle+' - '+episodeTitle);
-        }
-        else {
-          alert(
-            'Er is iets mis gegaan bij het verkrijgen van de'+
-            ' downloadlink naar de aflevering.'+
-            "\n"+
-            "\n"+
-            'Ververs de pagina en probeer het nogmaals.'
-            );
-        }
-      }
-      );
-  });
+  var episodeDate = extractDate(infoDate || episodeTitle);
 
-  $('#share-options').append(button);
+  if (episodeDate != null) {
+    episodeDate = episodeDate.format("yyyy-MM-dd")+' - ';
+  }
+  if (!episodeDate) {
+    episodeDate = '';
+  }
+
+  return videoFile = episodeDate+serieTitle+' - '+episodeTitle;
+}
+
+function getEpisodeId() {
+  return $('#episode-data').data('player-id') ||
+         $('.share-modal.modal.hide.fade').data('mid');
 }
 
 function getDownloadUrl(episodeId, callback) {
@@ -98,7 +132,8 @@ function getDownloadUrl(episodeId, callback) {
   function useToken(token) {
     $.ajax({
       url: 'http://ida.omroep.nl/odiplus/?prid='+episodeId+
-      '&puboptions=h264_std&adaptive=no&part=1&token='+token,
+           '&puboptions=h264_bb,h264_std,h264_sb&adaptive=no&part=1&token='+
+           token,
       error: callback,
       success: parseIda
     });
@@ -176,7 +211,8 @@ function extractDate(episodeName) {
 
     episodeName = $.trim(episodeName);
 
-    return Date.parseString(episodeName, "d NNN yyyy, H:mm");
+    return  Date.parseString(episodeName, "d NNN yyyy, H:mm") ||
+            Date.parseString(episodeName, "d NNN yyyy H:mm");
   }
   catch (exception) {
     return null;

@@ -22,16 +22,26 @@ var OptionsPage = function() {
     },
 
     restoreOptions : function() {
-      Options('ug').getEnabled(function(b) { el('ug_enabled').checked = b; });
-      Options('ug').getHTML5(function(b) { el('ug_html5').checked = b; });
-      Options('rtlxl').getEnabled(function(b) { el('rtlxl_enabled').checked = b; });
-      Options('rtlxl').getHTML5(function(b) { el('rtlxl_html5').checked = b; });
+      Options('ug').getEnabled(function(b) {
+        el('ug_enabled').checked = b;
+      });
+      Options('ug').getHTML5(function(b) {
+        el('ug_html5').checked = b;
+      });
+      Options('rtlxl').getEnabled(function(b) {
+        el('rtlxl_enabled').checked = b;
+      });
+      Options('rtlxl').getHTML5(function(b) {
+        el('rtlxl_html5').checked = b;
+      });
     }
   }
 };
 
 document.addEventListener('DOMContentLoaded', function() {
   var op = new OptionsPage();
-  document.querySelector('#save').onclick = function() { op.saveOptions(); };
+  document.querySelector('#save').onclick = function() {
+    op.saveOptions();
+  };
   op.restoreOptions();
 });

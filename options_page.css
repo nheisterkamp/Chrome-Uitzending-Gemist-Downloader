@@ -58,3 +58,11 @@ main > section {
   margin-left: .5em;
   margin-top: .5em;
 }
+
+/*main > section input[type="checkbox"] {
+  transition: opacity: 1s;
+}
+*/
+.disabled {
+  opacity: .4;
+}

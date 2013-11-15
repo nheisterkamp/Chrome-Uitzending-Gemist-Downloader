@@ -1,6 +1,9 @@
 function buttonHook() {
-  var btn = $('button.icon.download');
-  btn.attr("title", "Download aflevering"), $(btn).tipsy({
-    gravity: "n"
-  });
+  var btn = $('.icon.download');
+  if (btn) {
+    btn.attr("title", btn.attr("title")), $(btn).tipsy({
+      gravity: "n"
+    });
+  }
 }
+buttonHook();

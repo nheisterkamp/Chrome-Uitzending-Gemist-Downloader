@@ -5,47 +5,41 @@ o.getEnabled(function(val) {
     return;
   }
 
-  injectStylesheet("content.css");
-  injectScript("rtlxl.js");
-
   function domLoaded() {
-    if ($('button.icon.download').length > 0) {
+    if ($('.icon.download').length > 0) {
       return;
     }
 
-    var btn = $('<button '+
-                ' class="icon download">'),
-        icn = $('<div '+
-                'style="background: url(\''+
-                  chrome.extension.getURL('img/download-2.png')+
-                '\') no-repeat center;"></button>');
-
-    btn.click(function() {
-      getDownloadUrl(getEpisodeId(), function(url) {
-        if (typeof url === 'undefined' || !url) {
-          alert("Er is iets fout gegaan. Ververs de pagina en probeer opnieuw");
-        }
-        else {
-          downloadEpisode(url, getEpisodeName());
-        }
-      });
-    });
-
-    icn.appendTo(btn);
-    $('.video-meta > .actions > .icons').append(btn);
-    injectScriptContent("buttonHook()");
-
-    o.getHTML5(function(val) {
-      if (val === false) {
+    getDownloadUrl(getEpisodeId(), function(videoUrl) {
+      if (!videoUrl) {
         return;
       }
 
-      wrappertId = 'video-container';
-      wrappert = $('#'+wrappertId);
+      var btn = $('<a'+
+                  ' href="'+videoUrl+'"'+
+                  ' download="'+getVideoTitle()+'.mp4"'+
+                  ' title="Download aflevering: '+getVideoTitle()+'.mp4"'+
+                  ' class="icon download">'),
+          icn = $('<div '+
+                  'style="background: url(\''+
+                    chrome.extension.getURL('img/download-2.png')+
+                  '\') no-repeat center;">');
 
-      getDownloadUrl(getEpisodeId(), function(videoUrl) {
+      icn.appendTo(btn);
+      $('.video-meta > .actions > .icons').append(btn);
+      injectStylesheet("content.css");
+      injectScript("rtlxl.js");
+
+      o.getHTML5(function(val) {
+        if (val === false) {
+          return;
+        }
+
+        wrappertId = 'video-container';
+        wrappert = $('#'+wrappertId);
+
         newPlayerOnTheBlock =
-        $('<video id="player" controls autoplay>'
+        $('<video id="player" style="width: 100%;" controls autoplay>'
           + '  <source src="'+videoUrl+'" type="video/mp4">'
           + '</video>');
         wrappert.replaceWith(newPlayerOnTheBlock);
@@ -53,16 +47,28 @@ o.getEnabled(function(val) {
     });
   }
 
+  function getVideoTitle() {
+    var program = $('.video-title > h1').text(),
+        episode = $('.video-title > h2').text();
+        date  = $('meta[property="video:release_date"]').attr("content").trim();
+
+    var title = [program, episode].join(' - ');
+
+    if (date) {
+      var d = date.split(" ");
+      var pDate = new Date(Date.parse(d[0]));
+
+      if (pDate) {
+        title = pDate.format("yyyy-MM-dd")+' - '+title;
+      }
+    }
+
+    return title;
+  }
+
   function getEpisodeId() {
     var e = $('#content > .content-wrapper > .video-content > div');
     return e.attr('data-uuid');
-  }
-
-  function getEpisodeName() {
-    var name  = $('.video-title > h1').text(),
-        title = $('.video-title > h2').text();
-
-    return name+' - '+title;
   }
 
   function downloadEpisode(videoUrl, videoName) {
@@ -89,13 +95,18 @@ o.getEnabled(function(val) {
           callback();
         }
 
-        var url = r.material[0].videolink;
-        url = url.replace(/\/pc\//, '/rtlxl/network/a3t/');
-        callback(url);
+        if (r.material.length > 0) {
+          var url = r.material[0].videolink;
+          url = url.replace(/\/pc\//, '/rtlxl/network/a3t/');
+          callback(url);
+        }
+        else {
+          return callback();
+        }
       }
     });
   }
 
   $(document).ready(domLoaded);
-  setInterval(domLoaded, 5000); //check download button every 5 seconds
+  setInterval(domLoaded, 30000); //check download button every 30 seconds
 });
