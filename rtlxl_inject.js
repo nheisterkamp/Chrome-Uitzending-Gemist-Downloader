@@ -9,8 +9,14 @@ o.getEnabled(function(val) {
     if ($('.icon.download').length > 0) {
       return;
     }
+    
+    var episodeId = getEpisodeId();
+    
+    if(!episodeId) {
+	    return;
+    }
 
-    getDownloadUrl(getEpisodeId(), function(videoUrl) {
+    getDownloadUrl(episodeId, function(videoUrl) {
       if (!videoUrl) {
         return;
       }
@@ -108,5 +114,5 @@ o.getEnabled(function(val) {
   }
 
   $(document).ready(domLoaded);
-  setInterval(domLoaded, 30000); //check download button every 30 seconds
+  setInterval(domLoaded, 1000); //check download button every second
 });

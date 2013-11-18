@@ -1,4 +1,5 @@
 var o = Options('ug')
+var currentEpisodeId;
 
 o.getEnabled(function(val) {
   if (val === false) {
@@ -7,18 +8,25 @@ o.getEnabled(function(val) {
 
   $(document).ready(function() {
     setTimeout(addMainEpisodeDownloadButton, 100);
-    setInterval(addMainEpisodeDownloadButton, 30000);
+    setInterval(addMainEpisodeDownloadButton, 1000);
   });
 });
 
 function addMainEpisodeDownloadButton() {
-  videoFile = getEpisodeTitle();
-
-  if ($('.download_episode').length > 0) {
-    return;
+  var episodeId = getEpisodeId();
+  if(episodeId == currentEpisodeId) { // Don't do anyting if nothing has changed
+	  return;
   }
-
-  getDownloadUrl(getEpisodeId(), function(videoUrl) {
+  
+  $(".download_episode").parent().remove();
+  
+  if(!episodeId) {
+	  return;
+  }
+  
+  currentEpisodeId = episodeId;
+  getDownloadUrl(episodeId, function(videoUrl) {
+  	var videoFile = getEpisodeTitle();
     var button  = $('<div class="embed download block"></div>'),
         link    = $(button).append($(
                     '<a href="'+videoUrl+'"'+
@@ -54,6 +62,9 @@ function addMainEpisodeDownloadButton() {
       if (wrappert.length === 0) {
         wrappert = $('.video-player-container');
       }
+      if(wrappert.length === 0) {
+	      wrappert = $("#player");
+      }
 
       newPlayerOnTheBlock =
       $ ( '<video id="player" style="width: 100%;" controls autoplay>'
@@ -62,6 +73,20 @@ function addMainEpisodeDownloadButton() {
         );
 
       wrappert.replaceWith(newPlayerOnTheBlock);
+      
+      // Mark current episode, this won't work anymore when using HTML5 because it depends on a jwplayer event
+      var oldListItem = $("#episodes li.episode.nowplaying");
+      oldListItem.removeClass("nowplaying");
+      oldListItem.find(".image > a.episode-image > div.now-playing").remove();
+      
+      var localId = getLocalId();
+      if(!localId) {
+	      return;
+      }
+      
+      var listItem = $("#episode_" + localId);
+      listItem.addClass("nowplaying");
+      listItem.find(".image > a.episode-image").prepend("<div class='now-playing'></div>")
     });
   });
 }
@@ -112,6 +137,10 @@ function getEpisodeId() {
          $('.share-modal.modal.hide.fade').data('mid');
 }
 
+function getLocalId() {
+	return $('#episode-data').data("local-id");
+}
+
 function getDownloadUrl(episodeId, callback) {
   function parseToken(r, e) {
     var t = r.responseText,
@@ -124,9 +153,6 @@ function getDownloadUrl(episodeId, callback) {
         useToken(token);
       }
     }
-    else {
-      callback();
-    }
   }
 
   function useToken(token) {
@@ -134,7 +160,6 @@ function getDownloadUrl(episodeId, callback) {
       url: 'http://ida.omroep.nl/odiplus/?prid='+episodeId+
            '&puboptions=h264_bb,h264_std,h264_sb&adaptive=no&part=1&token='+
            token,
-      error: callback,
       success: parseIda
     });
   }
@@ -151,17 +176,11 @@ function getDownloadUrl(episodeId, callback) {
         success: parseOdi
       });
     }
-    else {
-      callback();
-    }
   }
 
   function parseOdi(r, e) {
     if (typeof r.url!=='undefined') {
       callback(r.url);
-    }
-    else {
-      callback();
     }
   }
 
