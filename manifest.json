@@ -1,5 +1,5 @@
 {
-  "name": "Uitzending Gemist Downloader",
+  "name": "Uitzending Gemist & RTL XL Downloader",
   "options_page": "options_page.html",
   "version": "2.0.0",
   "manifest_version": 2,
