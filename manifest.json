@@ -1,30 +1,55 @@
 {
   "name": "Uitzending Gemist Downloader",
-  "version": "1.4.1",
+  "options_page": "options_page.html",
+  "version": "2.0.0",
   "manifest_version": 2,
-  "description": "Download afleveringen van Uitzending Gemist.",
-  "homepage_url": "https://github.com/luukd/Chrome-Uitzending-Gemist-Downloader",
+  "description": "Download afleveringen van Uitzending Gemist en RTL XL.",
+  "homepage_url":
+    "https://github.com/luukd/Chrome-Uitzending-Gemist-Downloader",
   "icons": {
-  		"16": "img/icon-16.png",
-  		"48": "img/icon-48.png",
-  		"128": "img/icon-128.png"
+    "16": "img/icon-16.png",
+    "48": "img/icon-48.png",
+    "128": "img/icon-128.png"
   },
   "background": {
-	  "scripts": ["background.js"]
+    "scripts": ["options_background.js"]
   },
-  "content_scripts": [
-    {
-      "matches": ["*://www.uitzendinggemist.nl/*"],
-      "css": ["content.css"],
-      "js": ["date.js", "jquery.js", "content.js"]
-    }
-  ],
+  "content_scripts": [{
+    "matches": ["*://www.uitzendinggemist.nl/*", "*://www.npo.nl/*"],
+    "css": ["content.css"],
+    "js": [
+      "options.js",
+      "date.js",
+      "jquery.js",
+      "uitzendinggemist.js"
+    ],
+    "run_at": "document_idle"
+  }, {
+    "matches": ["*://www.rtlxl.nl/*", "*://rtlxl.nl/*"],
+    "css": ["content.css"],
+    "js": [
+      "options.js",
+      "date.js",
+      "jquery.js",
+      "inject.js",
+      "rtlxl_inject.js"
+    ],
+    "run_at": "document_idle"
+  }],
   "minimum_chrome_version": "25",
   "permissions": [
     "webRequest",
     "webRequestBlocking",
     "*://*.omroep.nl/",
-    "*://*.uitzendinggemist.nl/"
+    "*://*.uitzendinggemist.nl/",
+    "*://*.npo.nl/",
+    "*://*.rtl.nl/"
   ],
-  "web_accessible_resources": ["img/download.png", "img/download-black.png"]
+  "web_accessible_resources": [
+    "img/download.png",
+    "img/download-2.png",
+    "img/download-black.png",
+    "content.css",
+    "rtlxl.js"
+  ]
 }
