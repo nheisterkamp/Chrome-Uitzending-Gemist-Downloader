@@ -1,4 +1,4 @@
-var o = Options('ug')
+var o = Options('ug');
 var currentEpisodeId;
 
 o.getEnabled(function(val) {

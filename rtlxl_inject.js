@@ -1,4 +1,4 @@
-var o = Options("rtlxl")
+var o = Options("rtlxl");
 
 o.getEnabled(function(val) {
   if (val === false) {
@@ -25,14 +25,14 @@ o.getEnabled(function(val) {
                   ' href="'+videoUrl+'"'+
                   ' download="'+getVideoTitle()+'.mp4"'+
                   ' title="Download aflevering: '+getVideoTitle()+'.mp4"'+
-                  ' class="icon download">'),
+                  ' class="icon download all-link">'),
           icn = $('<div '+
                   'style="background: url(\''+
                     chrome.extension.getURL('img/download-2.png')+
                   '\') no-repeat center;">');
 
       icn.appendTo(btn);
-      $('.video-meta > .actions > .icons').append(btn);
+      $('.video-actions').append(btn);
       injectStylesheet("content.css");
       injectScript("rtlxl.js");
 
