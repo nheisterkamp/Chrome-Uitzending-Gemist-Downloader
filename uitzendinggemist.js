@@ -8,7 +8,7 @@ o.getEnabled(function(val) {
 
   $(document).ready(function() {
     setTimeout(addMainEpisodeDownloadButton, 100);
-    setInterval(addMainEpisodeDownloadButton, 1000);
+    setInterval(addMainEpisodeDownloadButton, 5000);
   });
 });
 
@@ -157,7 +157,7 @@ function getDownloadUrl(episodeId, callback) {
 
   function useToken(token) {
     $.ajax({
-      url: 'http://ida.omroep.nl/odiplus/?prid='+episodeId+
+      url: 'http://ida.omroep.nl/odi/?prid='+episodeId+
            '&puboptions=h264_bb,h264_std,h264_sb&adaptive=no&part=1&token='+
            token,
       success: parseIda
